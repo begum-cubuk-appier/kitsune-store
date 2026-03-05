@@ -45,6 +45,15 @@ function renderCategory(container) {
     container.innerHTML = html + '</div>';
 }
 
+// Service Worker Registration
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/kitsune-store/service-worker.js', {
+      scope: '/kitsune-store/'
+    })
+    .then(reg => console.log('Service Worker Registered!', reg))
+    .catch(err => console.log('Registration failed:', err));
+  }
+
 function renderProduct(container, id) {
     const item = products.find(p => p.id == id);
     container.innerHTML = `
