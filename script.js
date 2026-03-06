@@ -47,7 +47,7 @@ function renderCategory(container) {
 
 // Service Worker Registration
 if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/kitsune-store/service-worker.js', {
+    navigator.serviceWorker.register('/kitsune-store/qg-sw.d73668db67f33dcc40a7.js', {
       scope: '/kitsune-store/'
     })
     .then(reg => console.log('Service Worker Registered!', reg))
