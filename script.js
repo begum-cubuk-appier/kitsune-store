@@ -102,24 +102,37 @@ function renderSuccess(container) {
 }
 
 function renderLogin(container) {
-    container.innerHTML = `<h2>Login</h2><input type="text" placeholder="Username"><button onclick="window.location.hash = ''">Login</button>`;
-    function handleLogin() {
-        const username = document.getElementById('username-input').value;
-        
-        // 1. Log the profile to AIQUA
-        // This 'ingredient' tells the SDK who this user is.
-        qg('profile', {
-            'user_id': username,          // Unique ID for the user
-            'name': username,             // Display name
-            'email': username + "@example.com", // Mock email for testing
-            'city': 'Kyoto'               // Custom attribute
-        });
-    
-        console.log("Profile logged for:", username);
-    
-        // 2. Redirect back home
-        window.location.hash = '';
+    container.innerHTML = `
+        <h2>Login</h2>
+        <input id="username-input" type="text" placeholder="Username">
+        <button onclick="handleLogin()">Login</button>
+    `;
+}
+
+function handleLogin() {
+    const usernameInput = document.getElementById('username-input');
+    const username = usernameInput ? usernameInput.value.trim() : '';
+
+    if (!username) {
+        alert('Please enter a username.');
+        return;
     }
+
+    const customAttributes = {
+        user_id: username,
+        first_name: username,
+        last_name: '',
+        email: `${username}@example.com`,
+        city: 'Kyoto'
+    };
+
+    // Log custom user attributes to AIQUA using Web SDK
+    appier('identify', customAttributes);
+
+    console.log('Profile logged for:', customAttributes);
+
+    // Redirect back home
+    window.location.hash = '';
 }
 
 // 4. Cart Logic
