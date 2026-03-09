@@ -103,6 +103,23 @@ function renderSuccess(container) {
 
 function renderLogin(container) {
     container.innerHTML = `<h2>Login</h2><input type="text" placeholder="Username"><button onclick="window.location.hash = ''">Login</button>`;
+    function handleLogin() {
+        const username = document.getElementById('username-input').value;
+        
+        // 1. Log the profile to AIQUA
+        // This 'ingredient' tells the SDK who this user is.
+        qg('profile', {
+            'user_id': username,          // Unique ID for the user
+            'name': username,             // Display name
+            'email': username + "@example.com", // Mock email for testing
+            'city': 'Kyoto'               // Custom attribute
+        });
+    
+        console.log("Profile logged for:", username);
+    
+        // 2. Redirect back home
+        window.location.hash = '';
+    }
 }
 
 // 4. Cart Logic
