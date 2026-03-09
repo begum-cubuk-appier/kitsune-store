@@ -12,6 +12,11 @@ const navigate = () => {
     const path = window.location.hash.replace('#', '');
     const app = document.getElementById('app');
 
+    // Log SPA page views to AIQUA
+    if (typeof appier === 'function') {
+        appier('event', 'page_viewed', { url: window.location.href });
+    }
+
     if (!path || path === 'home') renderHome(app);
     else if (path === 'category') renderCategory(app);
     else if (path.startsWith('product/')) renderProduct(app, path.split('/')[1]);
@@ -56,6 +61,16 @@ if ('serviceWorker' in navigator) {
 
 function renderProduct(container, id) {
     const item = products.find(p => p.id == id);
+
+    // Log product viewed event to AIQUA
+    if (item && typeof appier === 'function') {
+        appier('event', 'product_viewed', {
+            product_id: String(item.id),
+            product_name: item.name,
+            category: item.category,
+            product_price: item.price
+        });
+    }
     container.innerHTML = `
         <div class="product-detail">
             <span>${item.img}</span>
@@ -73,6 +88,12 @@ function renderCart(container) {
     if (cart.length === 0) {
         html += '<p>Empty as a hollow log.</p>';
     } else {
+        // Log cart viewed event to AIQUA
+        if (typeof appier === 'function') {
+            appier('event', 'cart_viewed', {
+                total_items: cart.reduce((sum, i) => sum + i.quantity, 0)
+            });
+        }
         cart.forEach(item => {
             html += `
                 <div class="cart-item">
@@ -126,8 +147,11 @@ function handleLogin() {
         city: 'Kyoto'
     };
 
-    // Log custom user attributes to AIQUA using Web SDK
-    appier('identify', customAttributes);
+    // Log custom user attributes and a login event to AIQUA using Web SDK
+    if (typeof appier === 'function') {
+        appier('identify', customAttributes);
+        appier('event', 'login_completed', { user_id: username });
+    }
 
     console.log('Profile logged for:', customAttributes);
 
@@ -141,6 +165,17 @@ function addToCart(id) {
     const inCart = cart.find(c => c.id === id);
     if (inCart) inCart.quantity++;
     else cart.push({...item, quantity: 1});
+
+    // Log add to cart event to AIQUA
+    if (typeof appier === 'function') {
+        appier('event', 'add_to_cart', {
+            product_id: String(item.id),
+            product_name: item.name,
+            category: item.category,
+            product_price: item.price,
+            quantity: inCart ? inCart.quantity : 1
+        }, item.price);
+    }
     updateUI();
     alert("Added to cart!");
 }
@@ -160,6 +195,17 @@ function removeFromCart(id) {
 }
 
 function completePurchase() {
+    const totalQuantity = cart.reduce((sum, i) => sum + i.quantity, 0);
+    const totalValue = cart.reduce((sum, i) => sum + i.quantity * i.price, 0);
+
+    // Log purchase event to AIQUA
+    if (totalQuantity > 0 && typeof appier === 'function') {
+        appier('event', 'product_purchased', {
+            total_quantity: totalQuantity,
+            total_value: totalValue
+        }, totalValue);
+    }
+
     cart = [];
     updateUI();
     window.location.hash = 'success';
