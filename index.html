@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kitsune Spirit Shop</title>
-    <link rel="stylesheet" href="style.css">
-
+    <title>Kitsune Spirit Shop | Testing Suite</title>
+    
     <script type="text/javascript">
         !function(q,g,r,a,p,h,js) {
           q.appier=q.qg;
@@ -17,15 +16,33 @@
           p=g.createElement(r);p.async=!0;p.src=a;h=g.getElementsByTagName(r)[0];
           h.parentNode.insertBefore(p,h);
         } (window,document,'script','https://cdn-prd-gcp-jp0.aiqua.io/qgraph.d73668db67f33dcc40a7.js');
-      </script>
-      
+    </script>
+
+    <script type="text/javascript">
+        (function() {
+            'use strict';
+            // Zendesk Web Widget snippet
+            var zdScript = document.createElement('script');
+            zdScript.id = 'ze-snippet';
+            zdScript.src = 'https://static.zdassets.com/ekr/snippet.js?key=a8452d6f-9985-4f3f-8d90-22150b4e8e96';
+            document.head.appendChild(zdScript);
+
+            // Bot menu script
+            var botScript = document.createElement('script');
+            botScript.src = 'https://diploma-skinhead-skydiver.ngrok-free.dev/embed/zendesk-menu-bot-new-conversation.js';
+            botScript.defer = true;
+            document.head.appendChild(botScript);
+        })();
+    </script>
+
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <nav>
         <h1 onclick="window.location.hash = ''">🦊 Kitsune Shop</h1>
         <div id="nav-links">
             <button onclick="window.location.hash = 'cart'">Cart (<span id="cart-count">0</span>)</button>
-            <button onclick="window.location.hash = 'login'">Login</button>
+            <button id="user-display" onclick="window.location.hash = 'login'">Login</button>
         </div>
     </nav>
 
