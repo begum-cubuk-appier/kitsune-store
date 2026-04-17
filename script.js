@@ -1,3 +1,20 @@
+function() {
+    'use strict';
+
+    // Zendesk Web Widget snippet
+    var zdScript = document.createElement('script');
+    zdScript.id = 'ze-snippet';
+    zdScript.src = 'https://static.zdassets.com/ekr/snippet.js?key=a8452d6f-9985-4f3f-8d90-22150b4e8e96';
+    document.head.appendChild(zdScript);
+
+    // Bot menu script
+    var botScript = document.createElement('script');
+    botScript.src = 'https://diploma-skinhead-skydiver.ngrok-free.dev/embed/zendesk-menu-bot-new-conversation.js';
+    botScript.defer = true;
+    document.head.appendChild(botScript);
+
+   }();
+
 // 1. Data: Our Kitsune Items
 const products = [
     { id: 1, name: "Fox Mask", price: 25, img: "🎭", category: "Apparel" },
