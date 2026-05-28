@@ -175,14 +175,17 @@ function renderSuccess(container) {
     trackOrderConfirmation();
 }
 
-// LOGIN PAGE: Correctly placed birthday picker form elements here
+// LOGIN PAGE: Restored Email input field next to the Birthday picker
 function renderLogin(container) {
     const cachedProfile = JSON.parse(localStorage.getItem(PROFILE_STORAGE_KEY)) || { birthday: '' };
     container.innerHTML = `
         <h2>Identity Logging</h2>
         <div style="margin-bottom: 15px;">
+            <label style="display:block; font-size:12px; margin-bottom:5px;">Email Address:</label>
+            <input type="email" id="login-email" placeholder="Enter your email" style="color:black; padding:8px; width: 100%; max-width: 250px; display: block; margin-bottom: 15px;">
+            
             <label style="display:block; font-size:12px; margin-bottom:5px;">Enter Birthday Attribute:</label>
-            <input type="date" id="login-birthday" value="${cachedProfile.birthday}" style="color:black; padding:8px;">
+            <input type="date" id="login-birthday" value="${cachedProfile.birthday}" style="color:black; padding:8px; width: 100%; max-width: 250px; display: block;">
         </div>
         <button onclick="processLogin()">Login & Identify Attributes</button>
     `;
@@ -226,8 +229,10 @@ function removeFromCart(index) {
 }
 
 function processLogin() {
+    const emailInput = document.getElementById('login-email').value;
     const bdayInput = document.getElementById('login-birthday').value;
-    if (!bdayInput) return alert('Select your birthday.');
+    
+    if (!emailInput || !bdayInput) return alert('Please enter both your email and birthday.');
     
     const profile = saveUserProfile(bdayInput);
     if (profile) {
