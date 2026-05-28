@@ -12,7 +12,7 @@ const products = [
 
 let cart = [];
 
-// --- 1. Demographic & Tracking Core Architecture (From Reference Structure) ---
+// --- 1. Demographic & Tracking Core Architecture ---
 
 function calculateAge(birthday) {
     const birth = new Date(birthday + 'T00:00:00');
@@ -81,7 +81,6 @@ const navigate = () => {
 
 // --- 3. Pure Interface Layout Component Compilers ---
 
-// HOME PAGE: Restored original hero banner and direct product item layout
 function renderHome(container) {
     let html = `
         <section class="hero" style="text-align: center; margin-bottom: 30px;">
@@ -103,7 +102,6 @@ function renderHome(container) {
     container.innerHTML = html + '</div>';
 }
 
-// CATEGORY PAGE: Standard list display
 function renderCategory(container) {
     let html = '<h2>Our Collection</h2><div class="grid">';
     products.forEach(p => {
@@ -172,10 +170,8 @@ function renderSuccess(container) {
         <p>Your items are being delivered by fox-fire.</p>
         <button onclick="window.location.hash = ''">Back Home</button>
     `;
-    trackOrderConfirmation();
 }
 
-// LOGIN PAGE: Restored Email input field next to the Birthday picker
 function renderLogin(container) {
     const cachedProfile = JSON.parse(localStorage.getItem(PROFILE_STORAGE_KEY)) || { birthday: '' };
     container.innerHTML = `
@@ -205,8 +201,8 @@ function addToCart(id) {
 
     if (typeof window.qg === "function") {
         window.qg('event', 'add_to_cart', {
-            item_name: item.name,
-            price: item.price,
+            item_name: String(item.name),
+            price: Number(item.price),
             size: 'Universal'
         });
     }
@@ -242,6 +238,7 @@ function processLogin() {
     }
 }
 
+// TRACKING RE-ENGINEERED: Values fire instantly to protect against SPA rendering drops
 function completePurchase() {
     if (cart.length === 0) return alert("Your cart is empty!");
 
@@ -251,48 +248,25 @@ function completePurchase() {
     const profile = saveUserProfile(bdayInput);
     if (!profile) return alert('Please enter a valid birthday.');
 
+    // 1. Instantly Sync Profile Identity
     identifyUser(profile);
 
+    // 2. Prepare live mathematical layout variables
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const orderAmount = Number(subtotal) + Number(SHIPPING_FEE);
     const generatedOrderId = "KITSUNE_ORD_" + Date.now();
 
-    sessionStorage.setItem('kitsune_last_order', JSON.stringify({
-        order_id: generatedOrderId,
-        order_amount: orderAmount,
-        currency: ORDER_CURRENCY,
-        shipping_fee: Number(SHIPPING_FEE),
-        items: cart.map(item => ({
-            id: item.id,
-            name: item.name,
-            price: Number(item.price),
-            quantity: Number(item.quantity)
-        }))
-    }));
-
-    cart = [];
-    updateUI();
-    window.location.hash = 'success';
-}
-
-function trackOrderConfirmation() {
-    const raw = sessionStorage.getItem('kitsune_last_order');
-    if (!raw) return;
-
-    let order;
-    try { order = JSON.parse(raw); } catch { return; }
-    if (order.tracked) return;
-
+    // 3. Fire Transaction Overheads Directly
     const checkoutPayload = {
-        order_id: String(order.order_id),
-        order_amount: Number(order.order_amount),
-        currency: String(order.currency),
-        shipping_fee: Number(order.shipping_fee)
+        order_id: String(generatedOrderId),
+        order_amount: Number(orderAmount),
+        currency: String(ORDER_CURRENCY),
+        shipping_fee: Number(SHIPPING_FEE)
     };
-
     fireAppierEvent('checkout_completed', checkoutPayload);
 
-    (order.items || []).forEach(item => {
+    // 4. Loop over live active items to push SKU payloads
+    cart.forEach(item => {
         const productPayload = {
             product_id: 'KIT_SKU_' + item.id,
             product_name: String(item.name),
@@ -302,8 +276,10 @@ function trackOrderConfirmation() {
         fireAppierEvent('product_purchased', productPayload);
     });
 
-    order.tracked = true;
-    sessionStorage.setItem('kitsune_last_order', JSON.stringify(order));
+    // 5. Clean up tracking states and clear viewport
+    cart = [];
+    updateUI();
+    window.location.hash = 'success';
 }
 
 function updateUI() {
