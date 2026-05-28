@@ -1,6 +1,6 @@
 // --- Global Tracking Configurations ---
-const ORDER_CURRENCY = 'USD'; //
-const SHIPPING_FEE = 10; //
+const ORDER_CURRENCY = 'USD';
+const SHIPPING_FEE = 10;
 const PROFILE_STORAGE_KEY = 'kitsune_user_profile';
 
 // Your original testing items
@@ -14,53 +14,53 @@ let cart = [];
 
 // --- 1. Demographic & Tracking Core Architecture (From Reference Structure) ---
 
-function calculateAge(birthday) { //
-    const birth = new Date(birthday + 'T00:00:00'); //
-    if (Number.isNaN(birth.getTime())) return null; //
+function calculateAge(birthday) {
+    const birth = new Date(birthday + 'T00:00:00');
+    if (Number.isNaN(birth.getTime())) return null;
 
-    const today = new Date(); //
-    let age = today.getFullYear() - birth.getFullYear(); //
-    const monthDiff = today.getMonth() - birth.getMonth(); //
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) { //
-        age -= 1; //
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+        age -= 1;
     }
-    return age >= 0 ? age : null; //
+    return age >= 0 ? age : null;
 }
 
-function saveUserProfile(birthday) { //
-    const age = calculateAge(birthday); //
-    if (age === null) return null; //
+function saveUserProfile(birthday) {
+    const age = calculateAge(birthday);
+    if (age === null) return null;
 
     const profile = {
-        birthday: String(birthday), //
-        age: Number(age) //
+        birthday: String(birthday),
+        age: Number(age)
     };
-    localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(profile)); //
-    return profile; //
+    localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(profile));
+    return profile;
 }
 
-function identifyUser(profile) { //
-    if (!profile) return; //
+function identifyUser(profile) {
+    if (!profile) return;
 
     const payload = {
-        birthday: String(profile.birthday), //
-        age: Number(profile.age) //
+        birthday: String(profile.birthday),
+        age: Number(profile.age)
     };
 
-    if (typeof window.qg === 'function') { //
-        window.qg('identify', payload); //
+    if (typeof window.qg === 'function') {
+        window.qg('identify', payload);
     }
-    if (window.woopra && typeof window.woopra.identify === 'function') { //
-        window.woopra.identify(payload); //
+    if (window.woopra && typeof window.woopra.identify === 'function') {
+        window.woopra.identify(payload);
     }
 }
 
-function fireAppierEvent(eventName, payload) { //
-    if (typeof window.qg === 'function') { //
-        window.qg('event', eventName, payload); //
+function fireAppierEvent(eventName, payload) {
+    if (typeof window.qg === 'function') {
+        window.qg('event', eventName, payload);
     }
-    if (window.woopra && typeof window.woopra.track === 'function') { //
-        window.woopra.track(eventName, payload); //
+    if (window.woopra && typeof window.woopra.track === 'function') {
+        window.woopra.track(eventName, payload);
     }
 }
 
@@ -81,15 +81,29 @@ const navigate = () => {
 
 // --- 3. Pure Interface Layout Component Compilers ---
 
+// HOME PAGE: Restored original hero banner and direct product item layout
 function renderHome(container) {
-    container.innerHTML = `
-        <section class="hero">
+    let html = `
+        <section class="hero" style="text-align: center; margin-bottom: 30px;">
             <h2>Welcome to the Spirit Realm</h2>
             <button onclick="window.location.hash = 'category'">View All Kitsune Items</button>
         </section>
-    `;
+        <h2>Featured Products</h2>
+        <div class="grid">`;
+        
+    products.forEach(p => {
+        html += `
+            <div class="card">
+                <span>${p.img}</span>
+                <h3>${p.name}</h3>
+                <p>$${p.price}</p>
+                <button onclick="window.location.hash = 'product/${p.id}'">Go to Product</button>
+            </div>`;
+    });
+    container.innerHTML = html + '</div>';
 }
 
+// CATEGORY PAGE: Standard list display
 function renderCategory(container) {
     let html = '<h2>Our Collection</h2><div class="grid">';
     products.forEach(p => {
@@ -138,11 +152,12 @@ function renderCart(container) {
 }
 
 function renderCheckout(container) {
+    const cachedProfile = JSON.parse(localStorage.getItem(PROFILE_STORAGE_KEY)) || { birthday: '' };
     container.innerHTML = `
         <h2>Checkout</h2>
         <div style="margin-bottom: 20px;">
-            <label style="display:block; font-size:12px;">Birthday Attributes Tracking:</label>
-            <input type="date" id="checkout-birthday" style="padding:8px; color:black;">
+            <label style="display:block; font-size:12px; margin-bottom:5px;">Birthday Attributes Tracking:</label>
+            <input type="date" id="checkout-birthday" value="${cachedProfile.birthday}" style="padding:8px; color:black;">
         </div>
         <p>Select Payment Method:</p>
         <select><option>Inari Spirit Points</option><option>Credit Card</option></select>
@@ -157,14 +172,18 @@ function renderSuccess(container) {
         <p>Your items are being delivered by fox-fire.</p>
         <button onclick="window.location.hash = ''">Back Home</button>
     `;
-    // Execute analytical purchase tracking immediately upon success viewport load
     trackOrderConfirmation();
 }
 
+// LOGIN PAGE: Correctly placed birthday picker form elements here
 function renderLogin(container) {
+    const cachedProfile = JSON.parse(localStorage.getItem(PROFILE_STORAGE_KEY)) || { birthday: '' };
     container.innerHTML = `
         <h2>Identity Logging</h2>
-        <input type="date" id="login-birthday" style="color:black; padding:5px;">
+        <div style="margin-bottom: 15px;">
+            <label style="display:block; font-size:12px; margin-bottom:5px;">Enter Birthday Attribute:</label>
+            <input type="date" id="login-birthday" value="${cachedProfile.birthday}" style="color:black; padding:8px;">
+        </div>
         <button onclick="processLogin()">Login & Identify Attributes</button>
     `;
 }
@@ -181,12 +200,11 @@ function addToCart(id) {
     }
     updateUI();
 
-    // Fire example's precise dynamic "add_to_cart" structured event
-    if (typeof window.qg === "function") { //
-        window.qg('event', 'add_to_cart', { //
-            item_name: item.name, //
-            price: item.price, //
-            size: 'Universal' // Kept parameter signature pattern from example
+    if (typeof window.qg === "function") {
+        window.qg('event', 'add_to_cart', {
+            item_name: item.name,
+            price: item.price,
+            size: 'Universal'
         });
     }
     alert("Added to cart!");
@@ -211,40 +229,39 @@ function processLogin() {
     const bdayInput = document.getElementById('login-birthday').value;
     if (!bdayInput) return alert('Select your birthday.');
     
-    const profile = saveUserProfile(bdayInput); //
+    const profile = saveUserProfile(bdayInput);
     if (profile) {
-        identifyUser(profile); //
+        identifyUser(profile);
         alert('User profile identity mapped into tracker parameters!');
         window.location.hash = '';
     }
 }
 
 function completePurchase() {
-    if (cart.length === 0) return alert("Your cart is empty!"); //
+    if (cart.length === 0) return alert("Your cart is empty!");
 
     const bdayInput = document.getElementById('checkout-birthday').value;
-    if (!bdayInput) return alert('Please enter your birthday before checkout.'); //
+    if (!bdayInput) return alert('Please enter your birthday before checkout.');
 
-    const profile = saveUserProfile(bdayInput); //
-    if (!profile) return alert('Please enter a valid birthday.'); //
+    const profile = saveUserProfile(bdayInput);
+    if (!profile) return alert('Please enter a valid birthday.');
 
-    identifyUser(profile); // Sync profile parameters immediately prior to order closure
+    identifyUser(profile);
 
-    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0); //
-    const orderAmount = Number(subtotal) + Number(SHIPPING_FEE); //
-    const generatedOrderId = "KITSUNE_ORD_" + Date.now(); //
+    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const orderAmount = Number(subtotal) + Number(SHIPPING_FEE);
+    const generatedOrderId = "KITSUNE_ORD_" + Date.now();
 
-    // Compile temporary metrics handoff object into sessionStorage
-    sessionStorage.setItem('kitsune_last_order', JSON.stringify({ //
-        order_id: generatedOrderId, //
-        order_amount: orderAmount, //
-        currency: ORDER_CURRENCY, //
-        shipping_fee: Number(SHIPPING_FEE), //
-        items: cart.map(item => ({ //
-            id: item.id, //
-            name: item.name, //
-            price: Number(item.price), //
-            quantity: Number(item.quantity) //
+    sessionStorage.setItem('kitsune_last_order', JSON.stringify({
+        order_id: generatedOrderId,
+        order_amount: orderAmount,
+        currency: ORDER_CURRENCY,
+        shipping_fee: Number(SHIPPING_FEE),
+        items: cart.map(item => ({
+            id: item.id,
+            name: item.name,
+            price: Number(item.price),
+            quantity: Number(item.quantity)
         }))
     }));
 
@@ -253,36 +270,35 @@ function completePurchase() {
     window.location.hash = 'success';
 }
 
-function trackOrderConfirmation() { //
-    const raw = sessionStorage.getItem('kitsune_last_order'); //
-    if (!raw) return; //
+function trackOrderConfirmation() {
+    const raw = sessionStorage.getItem('kitsune_last_order');
+    if (!raw) return;
 
     let order;
-    try { order = JSON.parse(raw); } catch { return; } //
-    if (order.tracked) return; //
+    try { order = JSON.parse(raw); } catch { return; }
+    if (order.tracked) return;
 
     const checkoutPayload = {
-        order_id: String(order.order_id), //
-        order_amount: Number(order.order_amount), //
-        currency: String(order.currency), //
-        shipping_fee: Number(order.shipping_fee) //
+        order_id: String(order.order_id),
+        order_amount: Number(order.order_amount),
+        currency: String(order.currency),
+        shipping_fee: Number(order.shipping_fee)
     };
 
-    fireAppierEvent('checkout_completed', checkoutPayload); //
+    fireAppierEvent('checkout_completed', checkoutPayload);
 
-    // Loop through individual array items to log explicit purchases
-    (order.items || []).forEach(item => { //
+    (order.items || []).forEach(item => {
         const productPayload = {
-            product_id: 'KIT_SKU_' + item.id, //
-            product_name: String(item.name), //
-            product_price: Number(item.price), //
-            quantity: Number(item.quantity) //
+            product_id: 'KIT_SKU_' + item.id,
+            product_name: String(item.name),
+            product_price: Number(item.price),
+            quantity: Number(item.quantity)
         };
-        fireAppierEvent('product_purchased', productPayload); //
+        fireAppierEvent('product_purchased', productPayload);
     });
 
-    order.tracked = true; //
-    sessionStorage.setItem('kitsune_last_order', JSON.stringify(order)); //
+    order.tracked = true;
+    sessionStorage.setItem('kitsune_last_order', JSON.stringify(order));
 }
 
 function updateUI() {
@@ -293,7 +309,6 @@ function updateUI() {
 window.addEventListener('hashchange', navigate);
 window.addEventListener('load', () => {
     navigate();
-    // Re-verify existing cached user cookies/profiles if present
     const profile = JSON.parse(localStorage.getItem(PROFILE_STORAGE_KEY));
-    if (profile) identifyUser(profile); //
+    if (profile) identifyUser(profile);
 });
