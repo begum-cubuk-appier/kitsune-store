@@ -70,6 +70,11 @@ const navigate = () => {
     const path = window.location.hash.replace('#', '');
     const app = document.getElementById('app');
 
+    // Establish session footprint footprint tracker before view compilation
+    if (typeof window.qg === 'function') {
+        window.qg('event', 'page_view', { path: path ? '#' + path : '#home' });
+    }
+
     if (!path || path === 'home') renderHome(app);
     else if (path === 'category') renderCategory(app);
     else if (path.startsWith('product/')) renderProduct(app, path.split('/')[1]);
@@ -202,7 +207,7 @@ function addToCart(id) {
     if (typeof window.qg === "function") {
         window.qg('event', 'add_to_cart', {
             item_name: String(item.name),
-            price: Number(item.price),
+            price: String(item.price), // Handled as string schema format mapping
             size: 'Universal'
         });
     }
@@ -238,7 +243,6 @@ function processLogin() {
     }
 }
 
-// TRACKING RE-ENGINEERED: Values fire instantly to protect against SPA rendering drops
 function completePurchase() {
     if (cart.length === 0) return alert("Your cart is empty!");
 
@@ -248,35 +252,33 @@ function completePurchase() {
     const profile = saveUserProfile(bdayInput);
     if (!profile) return alert('Please enter a valid birthday.');
 
-    // 1. Instantly Sync Profile Identity
     identifyUser(profile);
 
-    // 2. Prepare live mathematical layout variables
+    // Calculate total prices inside active context scope
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const orderAmount = Number(subtotal) + Number(SHIPPING_FEE);
     const generatedOrderId = "KITSUNE_ORD_" + Date.now();
 
-    // 3. Fire Transaction Overheads Directly
+    // --- STRATEGIC INTEL SCHEMA PIECE: FORCED STRING VALUES FOR SYSTEM RECONCILIATION ---
     const checkoutPayload = {
         order_id: String(generatedOrderId),
-        order_amount: Number(orderAmount),
+        order_amount: String(orderAmount),      // String transformation safely processed
         currency: String(ORDER_CURRENCY),
-        shipping_fee: Number(SHIPPING_FEE)
+        shipping_fee: String(SHIPPING_FEE)      // String transformation safely processed
     };
     fireAppierEvent('checkout_completed', checkoutPayload);
 
-    // 4. Loop over live active items to push SKU payloads
     cart.forEach(item => {
         const productPayload = {
-            product_id: 'KIT_SKU_' + item.id,
+            product_id: 'KIT_SKU_' + String(item.id),
             product_name: String(item.name),
-            product_price: Number(item.price),
-            quantity: Number(item.quantity)
+            product_price: String(item.price),  // String transformation safely processed
+            quantity: String(item.quantity)     // String transformation safely processed
         };
         fireAppierEvent('product_purchased', productPayload);
     });
 
-    // 5. Clean up tracking states and clear viewport
+    // Clear cart variable instances and route out cleanly
     cart = [];
     updateUI();
     window.location.hash = 'success';
