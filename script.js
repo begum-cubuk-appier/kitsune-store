@@ -70,7 +70,7 @@ const navigate = () => {
     const path = window.location.hash.replace('#', '');
     const app = document.getElementById('app');
 
-    // Establish session footprint footprint tracker before view compilation
+    // Register active page trails with Appier
     if (typeof window.qg === 'function') {
         window.qg('event', 'page_view', { path: path ? '#' + path : '#home' });
     }
@@ -169,12 +169,15 @@ function renderCheckout(container) {
     `;
 }
 
+// CRITICAL FIX: The event triggers execute here immediately after the DOM layout stabilizes
 function renderSuccess(container) {
     container.innerHTML = `
         <h2>Success!</h2>
         <p>Your items are being delivered by fox-fire.</p>
         <button onclick="window.location.hash = ''">Back Home</button>
     `;
+    // Firing order confirmation metrics now that screen context is stabilized
+    trackOrderConfirmation();
 }
 
 function renderLogin(container) {
@@ -207,7 +210,7 @@ function addToCart(id) {
     if (typeof window.qg === "function") {
         window.qg('event', 'add_to_cart', {
             item_name: String(item.name),
-            price: String(item.price), // Handled as string schema format mapping
+            price: Number(item.price), // Passing back to numbers as schemas are verified correct
             size: 'Universal'
         });
     }
@@ -243,6 +246,7 @@ function processLogin() {
     }
 }
 
+// FIX: Strictly matches the exact payload serialization strategy of your template
 function completePurchase() {
     if (cart.length === 0) return alert("Your cart is empty!");
 
@@ -254,34 +258,59 @@ function completePurchase() {
 
     identifyUser(profile);
 
-    // Calculate total prices inside active context scope
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const orderAmount = Number(subtotal) + Number(SHIPPING_FEE);
     const generatedOrderId = "KITSUNE_ORD_" + Date.now();
 
-    // --- STRATEGIC INTEL SCHEMA PIECE: FORCED STRING VALUES FOR SYSTEM RECONCILIATION ---
+    // Serialize tracking metrics variables securely to cache
+    sessionStorage.setItem('kitsune_last_order', JSON.stringify({
+        order_id: generatedOrderId,
+        order_amount: orderAmount,
+        currency: ORDER_CURRENCY,
+        shipping_fee: Number(SHIPPING_FEE),
+        items: cart.map(item => ({
+            id: item.id,
+            name: item.name,
+            price: Number(item.price),
+            quantity: Number(item.quantity)
+        }))
+    }));
+
+    cart = [];
+    updateUI();
+    window.location.hash = 'success'; // Triggers view router change
+}
+
+// FIX: Reads from session memory post-navigation to eliminate asynchronous thread drop risks
+function trackOrderConfirmation() {
+    const raw = sessionStorage.getItem('kitsune_last_order');
+    if (!raw) return;
+
+    let order;
+    try { order = JSON.parse(raw); } catch { return; }
+    if (order.tracked) return;
+
     const checkoutPayload = {
-        order_id: String(generatedOrderId),
-        order_amount: String(orderAmount),      // String transformation safely processed
-        currency: String(ORDER_CURRENCY),
-        shipping_fee: String(SHIPPING_FEE)      // String transformation safely processed
+        order_id: String(order.order_id),
+        order_amount: Number(order.order_amount),
+        currency: String(order.currency),
+        shipping_fee: Number(order.shipping_fee)
     };
+
     fireAppierEvent('checkout_completed', checkoutPayload);
 
-    cart.forEach(item => {
+    (order.items || []).forEach(item => {
         const productPayload = {
-            product_id: 'KIT_SKU_' + String(item.id),
+            product_id: 'KIT_SKU_' + item.id,
             product_name: String(item.name),
-            product_price: String(item.price),  // String transformation safely processed
-            quantity: String(item.quantity)     // String transformation safely processed
+            product_price: Number(item.price),
+            quantity: Number(item.quantity)
         };
         fireAppierEvent('product_purchased', productPayload);
     });
 
-    // Clear cart variable instances and route out cleanly
-    cart = [];
-    updateUI();
-    window.location.hash = 'success';
+    order.tracked = true;
+    sessionStorage.setItem('kitsune_last_order', JSON.stringify(order));
 }
 
 function updateUI() {
