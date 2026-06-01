@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kitsune Spirit Shop</title>
+    <title>Kitsune Spirit Shop | Testing Suite</title>
     
     <script type="text/javascript">
         !function(q,g,r,a,p,h,js) {
@@ -18,9 +18,21 @@
         } (window,document,'script','https://cdn-prd-gcp-jp0.aiqua.io/qgraph.d73668db67f33dcc40a7.js');
     </script>
 
-    <script>
-        !function(){var t,e,r,a=window.woopra||[];if(!a.initialize){a.initialized=!0,a.initialize=function(t,e){var r,s,n,i=this;for(i.config_data=e||{},i.custom_tracker_queue=[],r=t.split("."),s=0;s<r.length;s++)n=r[s],i[n]=function(t){return function(){i.custom_tracker_queue.push([t,arguments])}}(n);i.track=function(){i.custom_tracker_queue.push(["track",arguments])},i.identify=function(){i.custom_tracker_queue.push(["identify",arguments])}};var s=document.createElement("script");s.async=!0,s.type="text/javascript",s.src="https://static.woopra.com/js/w.js";var n=document.getElementsByTagName("script")[0];n.parentNode.insertBefore(s,n)}}();
-        woopra.initialize("begum-cubuk-appier.github.io");
+    <script type="text/javascript">
+        (function() {
+            'use strict';
+            // Zendesk Web Widget snippet
+            var zdScript = document.createElement('script');
+            zdScript.id = 'ze-snippet';
+            zdScript.src = 'https://static.zdassets.com/ekr/snippet.js?key=ea3be9b0-06a7-41b2-9161-22ab79e21f52';
+            document.head.appendChild(zdScript);
+
+            // Bot menu script
+            var botScript = document.createElement('script');
+            botScript.src = 'https://diploma-skinhead-skydiver.ngrok-free.dev/embed/zendesk-menu-bot-new-conversation.js';
+            botScript.defer = true;
+            document.head.appendChild(botScript);
+        })();
     </script>
 
     <link rel="stylesheet" href="style.css">
@@ -30,7 +42,7 @@
         <h1 onclick="window.location.hash = ''">🦊 Kitsune Shop</h1>
         <div id="nav-links">
             <button onclick="window.location.hash = 'cart'">Cart (<span id="cart-count">0</span>)</button>
-            <button onclick="window.location.hash = 'login'">Login</button>
+            <button id="user-display" onclick="window.location.hash = 'login'">Login</button>
         </div>
     </nav>
 
